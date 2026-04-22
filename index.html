@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SCS → STL</title>
+  <style>
+    :root {
+      color-scheme: dark;
+    }
+
+    html,
+    body {
+      margin: 0;
+      height: 100%;
+      background: #111;
+      color: #ddd;
+      font: 14px/1.4 system-ui, sans-serif;
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      padding: 16px 20px;
+      border-bottom: 1px solid #222;
+    }
+
+    header h1 {
+      margin: 0 0 4px;
+      font-size: 18px;
+      font-weight: 600;
+    }
+
+    header p {
+      margin: 0;
+      color: #888;
+      font-size: 12px;
+    }
+
+    main {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      min-height: 0;
+    }
+
+    #panel {
+      padding: 16px 20px;
+      border-right: 1px solid #222;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      overflow-y: auto;
+    }
+
+    #drop {
+      border: 2px dashed #333;
+      border-radius: 6px;
+      padding: 32px 16px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color .15s, background .15s;
+    }
+
+    #drop.over {
+      border-color: #4a8;
+      background: #182220;
+    }
+
+    #drop input {
+      display: none;
+    }
+
+    button {
+      background: #2a2a2a;
+      color: #ddd;
+      border: 1px solid #444;
+      border-radius: 4px;
+      padding: 8px 12px;
+      cursor: pointer;
+      font: inherit;
+    }
+
+    button:hover:not(:disabled) {
+      background: #333;
+    }
+
+    button:disabled {
+      opacity: .5;
+      cursor: not-allowed;
+    }
+
+    label.row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      font-size: 13px;
+    }
+
+    #log {
+      white-space: pre-wrap;
+      font-family: ui-monospace, Menlo, monospace;
+      font-size: 12px;
+      background: #0a0a0a;
+      border: 1px solid #1f1f1f;
+      border-radius: 4px;
+      padding: 8px;
+      min-height: 200px;
+      flex: 1;
+      overflow-y: auto;
+    }
+
+    /* #stage is a containment box for the HOOPS viewer, which spews many
+         absolutely-positioned children that would otherwise escape into the
+         page and collide with the upload panel. */
+    #stage {
+      position: relative;
+      min-height: 0;
+      overflow: hidden;
+      contain: layout paint;
+    }
+
+    #viewer {
+      position: absolute;
+      inset: 0;
+    }
+
+    /* HOOPS Communicator paints a full UI chrome (toolbar, assembly tree,
+         measurement/section/explode tool panels, trackball) inside its root.
+         For a "drop file in → STL out" app the chrome is noise, so hide it.
+         The canvas container + svg overlay remain so streaming still works. */
+    #viewer .toolbar,
+    #viewer .tool__container,
+    #viewer .trackball,
+    #viewer .gc-viewer-footer,
+    #viewer .react-reveal {
+      display: none !important;
+    }
+
+    /* The bundle emits a duplicate `id="viewer"` inside its own root. The
+         CSS above targets .viewer class so it doesn't matter, but cap the
+         inner canvas area to fill the stage. */
+    #viewer .viewer-container,
+    #viewer .viewer-UI,
+    #viewer .viewer-wrap,
+    #viewer .viewer {
+      position: absolute;
+      inset: 0;
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <h1>SCS → STL converter</h1>
+    <p>Upload a HOOPS Stream Cache file. Geometry is extracted in-browser and downloaded as binary STL.</p>
+  </header>
+  <main>
+    <section id="panel">
+      <label id="drop" for="file">
+        <strong>Click or drop an .scs file</strong>
+        <div style="color:#777; margin-top:6px; font-size:12px;">Conversion runs entirely in your browser — nothing is
+          uploaded.</div>
+        <input type="file" id="file" accept=".scs,.SCS,application/octet-stream" />
+      </label>
+      <label class="row"><input type="checkbox" id="flipZ" checked /> Flip Z (right-side up in Z-up viewers)</label>
+      <button id="convert" disabled>Convert &amp; download STL</button>
+      <div id="log">Awaiting file…</div>
+    </section>
+    <section id="stage">
+      <!-- HOOPS WebViewer DOM. Hidden visually but kept in the document
+             so the WebGL context and asset streamer initialize. -->
+      <div id="viewer"></div>
+    </section>
+  </main>
+  <script src="bundle.js"></script>
+  <script src="app.js"></script>
+</body>
+
+</html>
