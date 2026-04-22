@@ -19395,7 +19395,7 @@ var GcHoopsViewer = function (e) {
             return f(this, null, function* () {
                 if (e.defaultBinary)
                     return e.defaultBinary;
-                const n = new URL((t || "") + "/engine.esm.wasm", window.location.toString())
+                const n = new URL((t ? t + "/" : "") + "engine.esm.wasm", window.location.toString())
                     , i = yield fetch(n);
                 if (!i.ok)
                     return;
